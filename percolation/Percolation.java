@@ -1,6 +1,7 @@
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+import edu.princeton.cs.algs4.Stopwatch;
 
 public class Percolation {
    
@@ -26,15 +27,14 @@ public class Percolation {
             sites = new WeightedQuickUnionUF(n*n+2);
             siteOpen = new boolean[n*n+2];
 
+            // O(n) so doesn't change O(n^2) runtime of constructor
             for (int i = 1; i <= n; i++) {
                 sites.union(siteIndex(1, i), sourceIndex);
-            }
-            siteOpen[sourceIndex] = true;
-
-            for (int i = 1; i <= n; i++) {
                 sites.union(siteIndex(n, i), sinkIndex);
             }
+            siteOpen[sourceIndex] = true;
             siteOpen[sinkIndex] = true;
+
         }
     }                
     
@@ -50,7 +50,7 @@ public class Percolation {
     // for finding nearest neighbors
     private int siteIndexUnsafe(int row, int col)
     {
-        return 0;
+        return (row - 1) + n*(col-1);
     }
 
     // return an array containing indices of neighbors of a given site
@@ -58,43 +58,22 @@ public class Percolation {
     private int[] nearestNeighbors(int row, int col)
     {
         validateRowCol(row, col);
-        int[] neighbors;
-        int index = siteIndex(row, col);
-        // corners have two neighbors
-        if (index == siteIndex(1,1)) {
-            neighbors = new int[] {siteIndex(row, col+1), siteIndex(row+1, col)};
-        }
-        else if (index == siteIndex(1,n)) {
-            neighbors = new int[] {siteIndex(row+1, col), siteIndex(row, col-1)};
-        }
-        else if (index == siteIndex(n,1)) {
-            neighbors = new int[] {siteIndex(row-1, col), siteIndex(row, col+1)};
-        }
-        else if (index == siteIndex(n,n)) {
-            neighbors = new int[] {siteIndex(row-1, col), siteIndex(row, col -1)};
-        }
-        // sites on edges have three neighbors
-        else if (row == 1) {
-            neighbors = new int[] {siteIndex(row, col-1), siteIndex(row, col+1), siteIndex(row+1, col)};
-        }
-        else if (row == n) {
-            neighbors = new int[] {siteIndex(row, col-1), siteIndex(row, col+1), siteIndex(row-1, col)};
-        }
-        else if (col == 1) {
-            neighbors = new int[] {siteIndex(row-1, col), siteIndex(row+1, col), siteIndex(row, col+1)};
-        }
-        else if (col == n) {
-            neighbors = new int[] {siteIndex(row-1, col), siteIndex(row+1, col), siteIndex(row, col-1)};
-        }
-        // Interior sites have four neighbors
-        else {
-            neighbors = new int[] {siteIndex(row-1, col), siteIndex(row, col+1), siteIndex(row+1, col), siteIndex(row, col-1)};
-        }
-
+        int[] neighbors = new int[] {siteIndexUnsafe(row+1, col),
+                                     siteIndexUnsafe(row, col+1),
+                                     siteIndexUnsafe(row-1, col),
+                                     siteIndexUnsafe(row, col-1)};
+      
         return neighbors;
 
     }
 
+    private boolean validIndex(int index)
+    {
+        if(index >= 0 && index <= n*n-1)
+            return true;
+        else
+            return false;
+    }
 
     private void validateRowCol(int row, int col)
     {
@@ -114,8 +93,9 @@ public class Percolation {
         siteOpen[index] = true;
 
         // connect to all open neighbors
+        // constant time because number of neighbors <= 4.
         for (int neighbor : siteNeighbors) {
-            if (siteOpen[neighbor]) {
+            if (validIndex(neighbor) && siteOpen[neighbor]) {
                 sites.union(index, neighbor);
             }
         }
@@ -140,10 +120,6 @@ public class Percolation {
 
         if (siteOpen[index]) {
             full = sites.connected(index, sourceIndex);
-            // for (int neighborIndex : neighbors) {
-            //     connectedToNeighbor |= sites.connected(index,neighborIndex);
-            // }
-            // full &= connectedToNeighbor;
         }
 
         return full;
@@ -164,6 +140,58 @@ public class Percolation {
    // test client
     public static void main(String[] args)
     {
-        StdOut.println("Percolation.")
+        double t1, t2;
+        Stopwatch timer = new Stopwatch();
+
+        t1 = timer.elapsedTime();
+        Percolation p4 = new Percolation(4);
+        t2 = timer.elapsedTime();
+        StdOut.printf("Percolation(4) took %f\n",t2-t1);
+
+        t1 = timer.elapsedTime();
+        Percolation p128 = new Percolation(128);
+        t2 = timer.elapsedTime();
+        StdOut.printf("Percolation(128) took %f\n",t2-t1);
+
+        t1 = timer.elapsedTime();
+        Percolation p256 = new Percolation(256);
+        t2 = timer.elapsedTime();
+        StdOut.printf("Percolation(256) took %f\n",t2-t1);
+
+        t1 = timer.elapsedTime();
+        Percolation p512 = new Percolation(512);
+        t2 = timer.elapsedTime();
+        StdOut.printf("Percolation(512) took %f\n",t2-t1);
+
+        t1 = timer.elapsedTime();
+        Percolation p1024 = new Percolation(1024);
+        t2 = timer.elapsedTime();
+        StdOut.printf("Percolation(1024) took %f\n",t2-t1);
+
+        t1 = timer.elapsedTime();
+        Percolation p2048 = new Percolation(2048);
+        t2 = timer.elapsedTime();
+        StdOut.printf("Percolation(2048) took %f\n",t2-t1);
+
+        t1 = timer.elapsedTime();
+        Percolation p5096 = new Percolation(5096);
+        t2 = timer.elapsedTime();
+        StdOut.printf("Percolation(5096) took %f\n",t2-t1);
+
+        StdOut.println("All sites of p4 should be blocked.");
+        StdOut.printf("Number open: %d\n", p4.numberOfOpenSites());
+        StdOut.printf("p4 percolates? %b\n", p4.percolates());
+        StdOut.printf("(1, 1) open? %b full? %b\n", p4.isOpen(1, 1), p4.isFull(1, 1));
+        StdOut.printf("(2, 3) open? %b full? %b\n", p4.isOpen(2, 3), p4.isFull(2, 3));
+        StdOut.println("Opening site (1, 3), (2, 3), (2, 2), (3, 2), (4, 2).");
+        p4.open(1, 1);
+        p4.open(1, 3);
+        p4.open(2, 3);
+        p4.open(2, 2);
+        p4.open(3, 2);
+        p4.open(4, 2);
+        StdOut.printf("Number open: %d\n", p4.numberOfOpenSites());
+        StdOut.printf("p4 percolates? %b\n", p4.percolates());
+
     }   
 }
