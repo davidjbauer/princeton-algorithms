@@ -54,7 +54,8 @@ public class Percolation {
     }
 
     // return an array containing indices of neighbors of a given site
-    // doing this by brute force for now, I'm sure there's a better way to do this
+    // some elements of the array may not be valid indices, we will
+    // need to check for this when using results of nearestNeighbors
     private int[] nearestNeighbors(int row, int col)
     {
         validateRowCol(row, col);
@@ -100,7 +101,11 @@ public class Percolation {
             }
         }
 
+        //if (row == n && sites.connected(index, sourceIndex))
+        //    sites.union(index, sinkIndex);
+
         numOpen++;
+
     }    
    
     // is site (row, col) open?
@@ -118,9 +123,7 @@ public class Percolation {
         int[] neighbors = nearestNeighbors(row, col);
         boolean connectedToNeighbor = false;
 
-        if (siteOpen[index]) {
-            full = sites.connected(index, sourceIndex);
-        }
+        full = sites.connected(index, sourceIndex) && siteOpen[index];
 
         return full;
     } 
