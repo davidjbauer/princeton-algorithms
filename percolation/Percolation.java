@@ -12,18 +12,17 @@ public class Percolation {
     private int numOpen;
     private int sourceIndex, sinkIndex;
 
+
     // create m-by-m grid, with all sites blocked
     public Percolation(int m) {
-        if (m <= 0) {
+        if (m <= 0)
             throw new java.lang.IllegalArgumentException("Grid size must be positive, non-zero integer.");
-        }
         else {
             n = m;
             numOpen = 0;
             sourceIndex = n*n;
             sinkIndex = n*n + 1;
-            // create our grid, plus two extra sites connected
-            // to the top and bottom rows, respectively.
+            // create our grid, plus two extra sites connected to the top and bottom rows, respectively.
             sites = new WeightedQuickUnionUF(n*n+2);
             siteOpen = new boolean[n*n+2];
 
@@ -34,23 +33,21 @@ public class Percolation {
             }
             siteOpen[sourceIndex] = true;
             siteOpen[sinkIndex] = true;
-
         }
     }                
     
     // get internal index for site at (row, col).
-    // recall that grid is indexed from 1 to n in each direction
-    // we'll use 0 to n-1 indexing interally   
+    // Grid is indexed from 1 to n in each direction, we'll use 0 to n-1 indexing interally   
     private int siteIndex(int row, int col)
     {
         validateRowCol(row, col);
-        return (row - 1) + n*(col-1);
+        return n*(row - 1) + (col-1);
     }
 
     // for finding nearest neighbors
     private int siteIndexUnsafe(int row, int col)
     {
-        return (row - 1) + n*(col-1);
+        return n*(row - 1) + (col-1);
     }
 
     // return an array containing indices of neighbors of a given site
@@ -63,9 +60,7 @@ public class Percolation {
                                      siteIndexUnsafe(row, col+1),
                                      siteIndexUnsafe(row-1, col),
                                      siteIndexUnsafe(row, col-1)};
-      
         return neighbors;
-
     }
 
     private boolean validIndex(int index)
@@ -88,6 +83,7 @@ public class Percolation {
     public void open(int row, int col)
     {
         int index = siteIndex(row, col);
+        // StdOut.printf("Opening (%d, %d), index %d\n", row, col, index);
         int[] siteNeighbors = nearestNeighbors(row, col);
 
         // set the site's status to open
@@ -100,12 +96,7 @@ public class Percolation {
                 sites.union(index, neighbor);
             }
         }
-
-        //if (row == n && sites.connected(index, sourceIndex))
-        //    sites.union(index, sinkIndex);
-
         numOpen++;
-
     }    
    
     // is site (row, col) open?
@@ -119,13 +110,7 @@ public class Percolation {
     public boolean isFull(int row, int col) 
     {
         int index = siteIndex(row, col);
-        boolean full = false;
-        int[] neighbors = nearestNeighbors(row, col);
-        boolean connectedToNeighbor = false;
-
-        full = sites.connected(index, sourceIndex) && siteOpen[index];
-
-        return full;
+        return siteOpen[index] && sites.connected(index, sourceIndex);
     } 
    
     // number of open sites
