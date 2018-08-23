@@ -47,7 +47,10 @@ public class Percolation {
     // for finding nearest neighbors
     private int siteIndexUnsafe(int row, int col)
     {
-        return n*(row - 1) + (col-1);
+        if(row <= 0 || col <= 0 || row > n || col > n)
+            return -1;
+        else
+            return n*(row - 1) + (col-1);
     }
 
     // return an array containing indices of neighbors of a given site
@@ -83,7 +86,6 @@ public class Percolation {
     public void open(int row, int col)
     {
         int index = siteIndex(row, col);
-        // StdOut.printf("Opening (%d, %d), index %d\n", row, col, index);
         int[] siteNeighbors = nearestNeighbors(row, col);
 
         // set the site's status to open

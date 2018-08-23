@@ -10,12 +10,14 @@ public class PercolationStats {
     private double[] thresholds;
     private int randomX, randomY;
     private double rootTrials;
+    private double mean;
+    private double stddev;
+    private static final double conf95 = 1.96;
 
-    public PercolationStats(int m, int t) {
-        if (m <= 0 || t <= 0)
+    public PercolationStats(int n, int trials) {
+        if (n <= 0 || trials <= 0)
             throw new java.lang.IllegalArgumentException("Grid size and number of trials must be > 0");
-        n = m;
-        trials = t;
+
         thresholds = new double[trials];
         rootTrials = java.lang.Math.sqrt(trials);
 
@@ -29,27 +31,29 @@ public class PercolationStats {
             }
             thresholds[i] = p.numberOfOpenSites()*1.0/(n*n);
         }
+        mean = StdStats.mean(thresholds);
+        stddev = StdStats.stddev(thresholds);
     }                
     
     public double mean() 
     {
-        return StdStats.mean(thresholds);
+        return mean;
     }
 
     public double stddev() 
     {
-        return StdStats.stddev(thresholds);
+        return stddev;
     }
 
-    public double confidenceLow() 
+    public double confidenceLo() 
     {
-        return this.mean() - 1.96*this.stddev()/rootTrials;
+        return mean - conf95*stddev/rootTrials;
     }
 
 
-    public double confidenceHigh() 
+    public double confidenceHi() 
     {
-        return this.mean() + 1.96*this.stddev()/rootTrials;
+        return mean + conf95*stddev/rootTrials;
     }
 
     // test client
@@ -67,8 +71,8 @@ public class PercolationStats {
         StdOut.printf("----------\n", n);
         StdOut.printf("Mean:       %f\n", stats.mean());
         StdOut.printf("StdDev:     %f\n", stats.stddev());
-        StdOut.printf("95ConfLow:  %f\n", stats.confidenceLow());
-        StdOut.printf("95ConfHigh: %f\n", stats.confidenceHigh());
+        StdOut.printf("95ConfLow:  %f\n", stats.confidenceLo());
+        StdOut.printf("95ConfHigh: %f\n", stats.confidenceHi());
 
 
     }   
