@@ -3,7 +3,6 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stopwatch;
 import java.util.Iterator;
 
-public class Deque<Item> implements Iterable<Item> {
 /*
    API Specification:
    public Deque()                           // construct an empty deque
@@ -16,6 +15,9 @@ public class Deque<Item> implements Iterable<Item> {
    public Iterator<Item> iterator()         // return an iterator over items in order from front to end
    public static void main(String[] args)   // unit testing (required)
 */
+
+public class Deque<Item> implements Iterable<Item> {
+
    // I'm going to implement the deque using a doubly-linked list,
    // so first I'll need to implement the linked list Node.
    private class Node
@@ -124,7 +126,7 @@ public class Deque<Item> implements Iterable<Item> {
         private Node current = head;
 
         public boolean hasNext()
-        { return false; }
+        { return (current.next != null); }
         public void remove() { }
         public Item next() {
             Item tmpItem = current.value;

@@ -4,9 +4,6 @@ import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.Stopwatch;
 import java.util.Iterator;
 
-// ignoring Iterable for testing purposes
-// implements Iterable<Item>
-public class RandomizedQueue<Item>  {
 /*
    public RandomizedQueue()                 // construct an empty randomized queue
    public boolean isEmpty()                 // is the randomized queue empty?
@@ -18,21 +15,23 @@ public class RandomizedQueue<Item>  {
    public static void main(String[] args)   // unit testing (required)
 */
 
+public class RandomizedQueue<Item> implements Iterable<Item> {
+
    private Item[] array;
    private int numItems;
    private int capacity;
 
    public RandomizedQueue()
    {
-        capacity = 10;
-        array = (Item[]) new Object[capacity];
-        numItems = 0;
+      capacity = 5;
+      array = (Item[]) new Object[capacity];
+      numItems = 0;
    }
 
    public boolean isEmpty()
    { 
-        if (numItems == 0) return true;
-        else return false;
+      if (numItems == 0) return true;
+      else return false;
    }
 
    public int size()
@@ -40,33 +39,45 @@ public class RandomizedQueue<Item>  {
 
    private void resize(int newSize)
    {
-        Item[] tmpArray = (Item[]) new Object[newSize];
-        for (int i = 0; i < numItems; i++)
-            tmpArray[i] = array[i];
-        array = tmpArray;
-        capacity = newSize;
+      Item[] tmpArray = (Item[]) new Object[newSize];
+      for (int i = 0; i < numItems; i++)
+          tmpArray[i] = array[i];
+      array = tmpArray;
+      capacity = newSize;
    }
 
    public void enqueue(Item item)
    {
-        if (numItems == capacity)
-            resize(2*capacity);
-        array[numItems++] = item;
+      if (numItems == capacity) resize(2*capacity);
+      array[numItems++] = item;
    }
 
    public Item dequeue()
    {
-        int randInt = StdRandom.uniform(numItems);
-        Item returnItem = array[randInt];
-        for (int i = randInt; i < (capacity - 1); i++)
-        {
-            if(array[i+1] != null)
-                array[i] = array[i+1];
-        }
-        array[capacity - 1] = null;
-        numItems--;
-        return returnItem;
+      int randInt = StdRandom.uniform(numItems);
+      Item returnItem = array[randInt];
+      for (int i = randInt; i < (capacity - 1); i++)
+      {
+          if(array[i+1] != null)
+              array[i] = array[i+1];
+      }
+      array[capacity - 1] = null;
+      numItems--;
+      if(1.0*numItems / capacity <= 1/4) resize(capacity/2);
+      return returnItem;
    }
+
+   private class RandomizedQueueIterator implements Iterator<Item>
+   {
+      public boolean hasNext()
+      { return numItems != 0; }
+      public void remove() { }
+      public Item next() 
+      { return dequeue(); }
+   }
+
+   public Iterator<Item> iterator()
+   { return new RandomizedQueueIterator(); }
 
    public static void main(String[] args)
    {
@@ -77,8 +88,11 @@ public class RandomizedQueue<Item>  {
         r.enqueue(5);
         r.enqueue(7);
         r.enqueue(11);
-        StdOut.printf("%d, %d, %d", r.dequeue(), r.dequeue(), r.dequeue());
-
+        r.enqueue(13);
+        StdOut.printf("Size (should be 7): %d\n", r.size());
+        StdOut.printf("Dequeue 3 items:\n");
+        StdOut.printf("%d, %d, %d\n", r.dequeue(), r.dequeue(), r.dequeue());
+        StdOut.printf("Size (should be 4): %d\n", r.size());
    }
 
 }
