@@ -8,11 +8,10 @@ public class Permutation {
     public static void main(String[] args)
     {
         int k = Integer.parseInt(args[0]);
-        String[] input = StdIn.readAllStrings();
         RandomizedQueue<String> r = new RandomizedQueue<String>();
-        for (String s: input)
+        while(!StdIn.isEmpty())
         {
-            r.enqueue(s);
+            r.enqueue(StdIn.readString());
         }
         for (int i = 0; i < k; i++)
         {
