@@ -38,8 +38,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
   private void resize(int newSize)
   {
     Item[] tmpArray = (Item[]) new Object[newSize];
+    int tmpIndex = 0;
     for (int i = 0; i < numItems; i++) {
-      if(array[i] != null)
         tmpArray[i] = array[i];
     }
     array = tmpArray;
@@ -58,11 +58,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
   {
     if(numItems == 0)
       throw new java.util.NoSuchElementException();
+
     int randInt = StdRandom.uniform(numItems);
-    Item returnItem = array[randInt];
-    array[randInt] = null;
+    Item returnItem = null;
+
+    returnItem = array[randInt];
+    array[randInt] = array[numItems - 1];
+    array[numItems - 1] = null;
+
     numItems--;
-    if(1.0*numItems / capacity <= 1/4) resize(capacity/2);
+    if (1.0*numItems / capacity <= 1/4)
+      resize(capacity/2);
     return returnItem;
   }
 
@@ -71,7 +77,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     if (numItems == 0)
       throw new java.util.NoSuchElementException();
     int randInt = StdRandom.uniform(numItems);
-    return array[randInt];
+    if (array[randInt] != null)
+      return array[randInt];
+    else return sample();
   }
 
   private class RandomizedQueueIterator implements Iterator<Item>
@@ -94,18 +102,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
   public static void main(String[] args)
   {
     RandomizedQueue<Integer> r = new RandomizedQueue<Integer>();
-    r.enqueue(1);
-    r.enqueue(2);
-    r.enqueue(3);
-    r.enqueue(5);
-    r.enqueue(7);
-    r.enqueue(11);
-    r.enqueue(13);
     for(int i = 0; i < 10000; i++)
-      StdOut.println(r.sample());
-    StdOut.printf("Size (should be 7): %d\n", r.size());
-    StdOut.printf("Dequeue 3 items:\n");
-    StdOut.printf("%d, %d, %d\n", r.dequeue(), r.dequeue(), r.dequeue());
-    StdOut.printf("Size (should be 4): %d\n", r.size());
+      r.enqueue(i);
+    for(int j = 0; j < 9999; j++)
+      StdOut.printf("%d, ", r.dequeue());
   }
 }
