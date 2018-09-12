@@ -8,79 +8,56 @@ import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.In;
 import java.util.Arrays;
+import java.util.ArrayList;
 
 public class BruteCollinearPoints {
 
-    private class Node {
-        public Node next;
-        public LineSegment segment;
-        public Node(LineSegment s) {
-            segment = s;
-            next = null;
-        }
-    }
-    private Node head;
     private LineSegment[] mySegments;
     private int numSegs;
 
     public BruteCollinearPoints(Point[] points) {
-        if (points == null)
-            throw new java.lang.IllegalArgumentException();
+        if (points == null) throw new IllegalArgumentException();
         int length = points.length;
-        Point [] tmpPoints = new Point[4];
+        
         Point [] sortPoints;
+        ArrayList<LineSegment> segmentList = new ArrayList<LineSegment>();
         double slope1, slope2, slope3;
-        Node current = null;
         for (int i = 0; i < length; i++) {
-            if (points[i] == null)
-                throw new java.lang.IllegalArgumentException();
+            if (points[i] == null) throw new IllegalArgumentException();
+            Point [] tmpPoints = new Point[4];
             tmpPoints[0] = points[i];
-
+            
             for (int j = i + 1; j < length; j++) {
+                if(points[j] == null) throw new IllegalArgumentException();
                 tmpPoints[1] = points[j];
                 slope1 = tmpPoints[0].slopeTo(tmpPoints[1]);
- 
-                if (tmpPoints[1] == null || slope1 == Double.NEGATIVE_INFINITY)
-                    throw new java.lang.IllegalArgumentException();
+                if (slope1 == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException();
+                
                 for (int k = j + 1; k < length; k++) {
+                    if(points[k] == null) throw new java.lang.IllegalArgumentException();
                     tmpPoints[2] = points[k];
                     slope2 = tmpPoints[0].slopeTo(tmpPoints[2]);
-
-                    if (tmpPoints[2] == null || slope2 == Double.NEGATIVE_INFINITY)
-                        throw new java.lang.IllegalArgumentException();
-                    if (slope1 == slope2)
+                    if (slope2 == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException();
+                    if (Double.compare(slope1, slope2) == 0)
                         for (int h = k + 1; h < length; h++) {
+                            if(points[h] == null) throw new IllegalArgumentException();
                             tmpPoints[3] = points[h];
                             slope3 = tmpPoints[0].slopeTo(tmpPoints[3]);
 
-                            if (tmpPoints[3] == null || slope3 == Double.NEGATIVE_INFINITY)
-                                throw new java.lang.IllegalArgumentException();
-                            if (slope3 == slope2) {
-                                sortPoints = Arrays.copyOf(tmpPoints, tmpPoints.length);
+                            if (slope3 == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException();
+                            if (Double.compare(slope2, slope3) == 0) {
+                                sortPoints = tmpPoints.clone();
                                 Arrays.sort(sortPoints);
-                                if (head == null) {
-                                    head = new Node(new LineSegment(sortPoints[0], sortPoints[3]));
-                                    current = head;
-                                }
-                                else if (current != null) {
-                                    current.next = new Node(new LineSegment(sortPoints[0], sortPoints[3]));
-                                    current = current.next;
-                                }
+                                segmentList.add(new LineSegment(sortPoints[0], sortPoints[3]));
                                 numSegs++;
-
+                                break;
                             }
                         }
                 }
             }
         }
 
-        current = head;
-        mySegments = new LineSegment[numSegs];
-        for(int i = 0; i < numSegs; i++) {
-            mySegments[i] = current.segment;
-            current = current.next;
-        }
-
+        mySegments = segmentList.toArray(new LineSegment[0]);
     }
 
     public int numberOfSegments() {
@@ -88,7 +65,7 @@ public class BruteCollinearPoints {
     }
 
     public LineSegment[] segments() {
-        return mySegments;
+        return mySegments.clone();
     }
 
     public static void main(String[] args) {

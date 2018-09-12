@@ -3,104 +3,99 @@
 //    public           int numberOfSegments()        // the number of line segments
 //    public LineSegment[] segments()                // the line segments
 // }
-import java.util.Comparator;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.In;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class FastCollinearPoints {
     
-    private class Node<Item> {
-        public Node<Item> next;
-        public Item item;
-        public Node(Item s) {
-            item = s;
-            next = null;
+    private int numSegs;
+    final private LineSegment[] segs;
+
+    private class Segment implements Comparable<Segment> {
+        public double slope;
+        public Point end, start;
+
+        public Segment(double slope, Point start, Point end) {
+            this.slope = slope;
+            this.end = end;
+            this.start = start;
+        }
+        public int compareTo(Segment other) {
+            return Double.compare(this.slope, other.slope);
         }
     }
 
-    private Node<Point> head, current;
-    private Node<LineSegment> segHead, segCurr;
-    private int numSegs;
-    private LineSegment[] segs;
-    private Point pt0, pt1;
-    private Point[] sortPoints;
-    private double tmpSlope;
-    private int tmpIndex;
-
     public FastCollinearPoints(Point[] points) {
-        if (points == null)
-            throw new java.lang.IllegalArgumentException();
-        numSegs = 0;
-        // For each Point passed in the argument, sort the subarray to the right.
-        // [p1, p2, .. pN]
-        // [p1, sort([p2, .., pN])
-        //   ^
-        // [p1, pm2, sort([pm3, ... pmN])]
-        //       ^
+        
+        List<Point> pointList;
+        Point origin, tmpPoint;
+        Point[] sortPoints;
+        double currentSlope;
+        LineSegment tmpSegment;
+        List<Segment> segmentList = new ArrayList<Segment>();
+        List<LineSegment> lineList = new ArrayList<LineSegment>();
+
+        if (points == null) throw new IllegalArgumentException();
+
+        this.numSegs = 0;
+        Arrays.sort(points);
+        sortPoints = points.clone();
         for (int i = 0; i < points.length; i++) {
-            pt0 = points[i];
+            points = sortPoints.clone();
+            origin = sortPoints[i];
+            tmpPoint = sortPoints[0];
+            points[0] = origin;
+            points[i] = tmpPoint;
 
-            if (pt0 == null)
-                throw new java.lang.IllegalArgumentException();
+            if (origin == null) throw new IllegalArgumentException();
 
-            Arrays.sort(points, i+1, points.length, pt0.slopeOrder());
+            Arrays.sort(points, 1, points.length, origin.slopeOrder());
 
-            // Now loop through the points, which are sorted by their slope
-            // to our original point. For each point in THIS loop,
-            // check if its slope w.r.t. the original point is equal
-            // to the subsequent point. If it's not, move on.
-            // If it IS, then add it to a linked list.
-            int k = i+1;
+            int k = 1;
             while (k < points.length) {
-                tmpSlope = pt0.slopeTo(points[i+1]);
-                tmpIndex = k + 1;
-                head = new Node<Point>(points[i+1]);
-                current = head;
+                if(points[k] == null) throw new IllegalArgumentException();
+                currentSlope = origin.slopeTo(points[k]);
+                pointList = new ArrayList<Point>();
+                pointList.add(points[k]);
+                int numCollinear = 1;
                 for (int h = k + 1; h < points.length; h++) {
-                    if (tmpSlope == pt0.slopeTo(points[h])) {
-                        tmpIndex = h;
-                        current.next = new Node<Point>(points[h]);
-                        current = current.next;
+                    if (Double.compare(currentSlope, origin.slopeTo(points[h])) == 0.0) {
+                        pointList.add(points[h]);
+                        numCollinear++;
                     }
                     else break;
                 }
-                // Now we take all the collinear points we found and put
-                // them in an array. Then we sort the array to find the
-                // first and last points in the sequence. Finally we 
-                // create a line segment between the first and last points
-                // and add that to a linked list.
-                int numCollinear = tmpIndex - k + 1;
-                StdOut.printf("numCollinear = %d\n", numCollinear);
-                if (numCollinear > 3) {
-                    sortPoints = new Point[numCollinear];
-                    current = head;
-                    for (int j = 0; j < numCollinear; j++) {
-                        sortPoints[j] = current.item;
-                        current = current.next;
-                    }
-                    Arrays.sort(sortPoints);
-                    if(segHead == null) {
-                        segHead = new Node<LineSegment>(new LineSegment(sortPoints[0], sortPoints[tmpIndex - k]));
-                        segCurr = segHead;
-                    }
-                    else {
-                        segCurr.next = new Node<LineSegment>(new LineSegment(sortPoints[0], sortPoints[tmpIndex - k]));
-                        segCurr = segCurr.next;
-                    }
+                if (numCollinear >= 3) {
+                    Collections.sort(pointList);
+                    Point startPoint = pointList.get(0);
+                    Point endPoint = pointList.get(pointList.size() - 1);
+                    segmentList.add(new Segment(currentSlope, startPoint, endPoint));
                     numSegs++;
+                    k = k + numCollinear;
                 }
-                k = tmpIndex + 1;
+                else k++;
             }
         }
-        segCurr = segHead;
-        segs = new LineSegment[numSegs];
-        for(int j = 0; j < numSegs; j++) {
-            segs[j] = segCurr.item;
-            segCurr = segCurr.next;
+        Collections.sort(segmentList);
+        for (int j = 0; j < segmentList.size()-1; j++) {
+            Segment current = segmentList.get(j);
+            Segment next = segmentList.get(j+1);
+            if (current.compareTo(next) == 0) {
+                if (current.end.compareTo(next.end) >= 0)
+                    lineList.add(new LineSegment(next.start, next.end));
+                else {
+                    lineList.add(new LineSegment(current.start, current.end));
+                    ++j;
+                }
+            }
         }
-
+        segs = lineList.toArray(new LineSegment[0]);
+        
     }
 
     public int numberOfSegments() {
@@ -108,7 +103,7 @@ public class FastCollinearPoints {
     }
 
     public LineSegment[] segments() {
-        return segs;
+        return segs.clone();
     }
 
     // Sample client.
