@@ -16,39 +16,23 @@ public class FastCollinearPoints {
     private int numSegs;
     final private LineSegment[] segs;
 
-    private class Segment implements Comparable<Segment> {
-        public double slope;
-        public Point end, start;
-
-        public Segment(double slope, Point start, Point end) {
-            this.slope = slope;
-            this.end = end;
-            this.start = start;
-        }
-        public int compareTo(Segment other) {
-            return Double.compare(this.slope, other.slope);
-        }
-    }
-
     public FastCollinearPoints(Point[] points) {
         
         List<Point> pointList;
         Point origin, tmpPoint;
-        Point[] sortPoints;
+        final Point[] inputPoints;
         double currentSlope;
-        LineSegment tmpSegment;
-        List<Segment> segmentList = new ArrayList<Segment>();
         List<LineSegment> lineList = new ArrayList<LineSegment>();
 
         if (points == null) throw new IllegalArgumentException();
 
         this.numSegs = 0;
         Arrays.sort(points);
-        sortPoints = points.clone();
+        inputPoints = points.clone();
         for (int i = 0; i < points.length; i++) {
-            points = sortPoints.clone();
-            origin = sortPoints[i];
-            tmpPoint = sortPoints[0];
+            points = inputPoints.clone();
+            origin = inputPoints[i];
+            tmpPoint = inputPoints[0];
             points[0] = origin;
             points[i] = tmpPoint;
 
@@ -61,6 +45,7 @@ public class FastCollinearPoints {
                 if(points[k] == null) throw new IllegalArgumentException();
                 currentSlope = origin.slopeTo(points[k]);
                 pointList = new ArrayList<Point>();
+                pointList.add(origin);
                 pointList.add(points[k]);
                 int numCollinear = 1;
                 for (int h = k + 1; h < points.length; h++) {
@@ -70,32 +55,20 @@ public class FastCollinearPoints {
                     }
                     else break;
                 }
+                Collections.sort(pointList);
+                Point startPoint = pointList.get(0);
                 if (numCollinear >= 3) {
-                    Collections.sort(pointList);
-                    Point startPoint = pointList.get(0);
-                    Point endPoint = pointList.get(pointList.size() - 1);
-                    segmentList.add(new Segment(currentSlope, startPoint, endPoint));
-                    numSegs++;
+                    if (startPoint.compareTo(origin) == 0) { 
+                        Point endPoint = pointList.get(pointList.size() - 1);
+                        lineList.add(new LineSegment(startPoint, endPoint));
+                        numSegs++;
+                    }
                     k = k + numCollinear;
                 }
                 else k++;
             }
         }
-        Collections.sort(segmentList);
-        for (int j = 0; j < segmentList.size()-1; j++) {
-            Segment current = segmentList.get(j);
-            Segment next = segmentList.get(j+1);
-            if (current.compareTo(next) == 0) {
-                if (current.end.compareTo(next.end) >= 0)
-                    lineList.add(new LineSegment(next.start, next.end));
-                else {
-                    lineList.add(new LineSegment(current.start, current.end));
-                    ++j;
-                }
-            }
-        }
-        segs = lineList.toArray(new LineSegment[0]);
-        
+        segs = lineList.toArray(new LineSegment[0]);     
     }
 
     public int numberOfSegments() {
