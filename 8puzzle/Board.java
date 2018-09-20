@@ -23,7 +23,6 @@ public class Board {
 
     private int dim;
     private int[] board;
-    private int[] goalBoard;
 
     public Board(int[][] blocks) {
         this.dim = blocks.length;
@@ -34,12 +33,6 @@ public class Board {
             int col = i%n;
             board[i] = blocks[row][col];
         }
-
-        this.goalBoard = new int[n*n];
-        for (int i = 0; i < n*n; i++) {
-            this.goalBoard[i] = i + 1;
-        }
-        this.goalBoard[n*n-1] = 0;
     }
 
     public int dimension() {
@@ -49,7 +42,7 @@ public class Board {
     public int hamming() {
         int dist = 0;
         for (int i = 0; i < this.dim*this.dim; i++) {
-            if (this.board[i] != this.goalBoard[i] && this.board[i] != 0)
+            if (this.board[i] != (i+1) && this.board[i] != 0)
                 dist++;
         }
         return dist;
@@ -57,13 +50,14 @@ public class Board {
 
     public int manhattan() {
         int dist = 0;
-        int diff, xDist, yDist;
+        int xCoord, yCoord, xGoal, yGoal;
         for (int i = 0; i < this.dim*this.dim; i++) {
             if (this.board[i] != 0) {
-                diff = this.board[i] - (i + 1);
-                xDist = diff % this.dim;
-                yDist = diff / this.dim;
-                dist = dist + Math.abs(xDist) + Math.abs(yDist);
+                xCoord = i % this.dim;
+                yCoord = i / this.dim;
+                xGoal = (this.board[i] - 1) % this.dim;
+                yGoal = (this.board[i] - 1) / this.dim;
+                dist = dist + Math.abs(xCoord - xGoal) + Math.abs(yCoord - yGoal);
             }
         }
         return dist;
@@ -109,7 +103,8 @@ public class Board {
     public boolean isGoal() {
         boolean goal = true;
         for (int i = 0; i < this.dim*this.dim; i++) {
-            goal &= (board[i] == goalBoard[i]);
+            if (board[i] != 0)
+                goal &= (board[i] == (i+1));
         }
         return goal;
     }
@@ -133,6 +128,7 @@ public class Board {
         if (other == null) return false;
         if (this.getClass() != other.getClass()) return false;
         Board bOther = (Board) other;
+        if (bOther.dimension() != this.dim) return false;
         boolean result = true;
         for (int i = 0; i < this.dim*this.dim; i++) {
             result &= (this.board[i] == bOther.board[i]);
@@ -171,6 +167,7 @@ public class Board {
                 blocks[i][j] = in.readInt();
         Board initial = new Board(blocks);
         Board same = new Board(blocks);
+        StdOut.println(0%3);
         StdOut.println(initial);
         StdOut.println("Initial board equals a copy of itself?");
         StdOut.println(initial.equals(same));

@@ -21,11 +21,13 @@ public class Solver {
 
     private class SearchNode implements Comparable<SearchNode> {
         public Board board;
-        private int priority;
+        public int priority;
+        public int moves;
         public SearchNode predNode;
-        public SearchNode(Board b, int p, SearchNode pr) {
+        public SearchNode(Board b, int p, int m, SearchNode pr) {
             this.board = b;
             this.priority = p;
+            this.moves = m;
             this.predNode = pr;
         }
         public int compareTo(SearchNode that) {
@@ -50,29 +52,31 @@ public class Solver {
         }
         else {
             Iterable<Board> neighbors;
-            SearchNode currNode = new SearchNode(currBoard, initial.manhattan(), null);
-            SearchNode twinNode = new SearchNode(twinBoard, twinBoard.manhattan(), null); 
+            SearchNode currNode = new SearchNode(currBoard, initial.manhattan(), 0, null);
+            SearchNode twinNode = new SearchNode(twinBoard, twinBoard.manhattan(), 0, null); 
             MinPQ<SearchNode> initPQ = new MinPQ<SearchNode>();
             MinPQ<SearchNode> twinPQ = new MinPQ<SearchNode>();
-            //initPQ.insert(currNode);
-            //twinPQ.insert(twinNode);
+
             while(!currBoard.isGoal() && !twinBoard.isGoal()) {
-                ++numMoves;
                 neighbors = currBoard.neighbors();
                 for (Board n : neighbors) {
-                    if (currNode.predNode == null)
-                        initPQ.insert(new SearchNode(n, n.manhattan() + numMoves, currNode));
-                    else if (!n.equals(currNode.predNode.board))
-                        initPQ.insert(new SearchNode(n, n.manhattan() + numMoves, currNode));
+                    numMoves = currNode.moves + 1;
+                    if (currNode.predNode == null) {
+                        initPQ.insert(new SearchNode(n, n.manhattan() + numMoves, numMoves, currNode));
+                    }
+                    else if (!n.equals(currNode.predNode.board)) {
+                        initPQ.insert(new SearchNode(n, n.manhattan() + numMoves, numMoves, currNode));
+                    }
                 }
                 currNode = initPQ.delMin();
                 currBoard = currNode.board;
                 neighbors = twinBoard.neighbors();
                 for (Board n : neighbors) {
+                    numMoves = currNode.moves + 1;
                     if (twinNode.predNode == null)
-                        twinPQ.insert(new SearchNode(n, n.manhattan() + numMoves, twinNode));
+                        twinPQ.insert(new SearchNode(n, n.manhattan() + numMoves, numMoves, twinNode));
                     else if (!n.equals(twinNode.predNode.board))
-                        twinPQ.insert(new SearchNode(n, n.manhattan() + numMoves, twinNode));
+                        twinPQ.insert(new SearchNode(n, n.manhattan() + numMoves, numMoves, twinNode));
                 }
                 twinNode = twinPQ.delMin();
                 twinBoard = twinNode.board;
