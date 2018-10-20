@@ -128,6 +128,12 @@ public class KdTree {
         return q;
     }
 
+    public boolean contains(Point2D p) {
+        Point2D q = nearest(p);
+        return q.equals(p);
+    }
+
+
     public void draw() {
         for (KdTreeNode k : iter()) {
             StdDraw.setPenRadius(0.005);
@@ -152,18 +158,46 @@ public class KdTree {
         }
     }
 
-    // public Point2D nearest(Point2D p) {
+    public Point2D nearest(Point2D p) {
+        return nearest(this.root, p, null);
+    }
 
-    // }
+    private Point2D nearest(KdTreeNode orig, Point2D p, Point2D prevClosest) {
+        Point2D closest = prevClosest;
+        if (orig == null)
+            return closest;
+        if (prevClosest == null)
+            closest = orig.pt;
+        double prevDist = p.distanceTo(closest);
+        double currDist = p.distanceTo(orig.pt);
+        if (currDist < prevDist)
+            closest = orig.pt;
+        if (orig.left != null && orig.left.rect.distanceTo(p) < currDist)
+            closest = nearest(orig.left, p, closest);
+        if (orig.right != null && orig.right.rect.distanceTo(p) < currDist)
+            closest = nearest(orig.right, p, closest);
+        return closest;
+    }
 
-    // public Iterable<Point2D> range(RectHV rect) {
-    //     ArrayList<Point2D> a = new ArrayList<Point2D>();
 
-    // }
+    public Iterable<Point2D> range(RectHV rect) {
+        return range(root, rect, new ArrayList<Point2D>());
+    }
+
+    private Iterable<Point2D> range(KdTreeNode orig, RectHV rect, ArrayList<Point2D> array) {
+        if (orig == null) return array;
+        if (rect.contains(orig.pt)) 
+            array.add(orig.pt);
+        if (orig.left != null && rect.intersects(orig.left.rect))
+            range(orig.left, rect, array);
+        if (orig.right != null && rect.intersects(orig.right.rect))
+            range(orig.right, rect, array);
+        return array;
+    }
 
     public static void main(String[] args) {
         KdTree tree  = new KdTree();
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 20; i++) {
             double rand1 = StdRandom.uniform();
             double rand2 = StdRandom.uniform();
             Point2D p = new Point2D(rand1, rand2);
@@ -172,25 +206,19 @@ public class KdTree {
         }
 
         tree.draw();
+        double rand1 = StdRandom.uniform();
+        double rand2 = StdRandom.uniform();
+        Point2D p = new Point2D(rand1, rand2);
+        Point2D q = tree.nearest(p);
+        tree.draw();
+        StdOut.println(tree.contains(p));
+        StdOut.println(tree.contains(q));
+        StdDraw.setPenColor(StdDraw.GREEN);
+        StdDraw.setPenRadius(0.01);
+        StdDraw.point(p.x(), p.y());
+        StdDraw.setPenColor(StdDraw.ORANGE);
+        StdDraw.point(q.x(), q.y());
 
-        // set.draw();
-        // double rand1 = scale*StdRandom.uniform();
-        // double rand2 = scale*StdRandom.uniform();
-        // Point2D m = new Point2D(rand1, rand2);
-        // Point2D n = set.nearest(m);
-        // RectHV r = new RectHV(20, 20, 100, 100);
-        // r.draw();
-        // Iterable<Point2D> it = set.range(r);
-        // int count = 0;
-        // for (Point2D q : it) {
-        //     StdOut.println(count);
-        //     StdOut.println(q);
-        //     count++;
-        // }
-        //StdOut.println("--------------");
-        //StdOut.println(m);
-        //StdOut.println(n);
-        //StdOut.println(m.distanceTo(n));
     }
 
 

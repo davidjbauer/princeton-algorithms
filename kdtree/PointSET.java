@@ -10,14 +10,14 @@ import java.util.ArrayList;
     
 // API Specification 
 // public class PointSET {
-//    public         PointSET()                               // construct an empty set of points 
-//    public           boolean isEmpty()                      // is the set empty? 
-//    public               int size()                         // number of points in the set 
-//    public              void insert(Point2D p)              // add the point to the set (if it is not already in the set)
+// +   public         PointSET()                               // construct an empty set of points 
+//  +  public           boolean isEmpty()                      // is the set empty? 
+//  +  public               int size()                         // number of points in the set 
+//  +  public              void insert(Point2D p)              // add the point to the set (if it is not already in the set)
 //    public           boolean contains(Point2D p)            // does the set contain point p? 
-//    public              void draw()                         // draw all points to standard draw 
-//    public Iterable<Point2D> range(RectHV rect)             // all points that are inside the rectangle (or on the boundary) 
-//    public           Point2D nearest(Point2D p)             // a nearest neighbor in the set to point p; null if the set is empty 
+//  +  public              void draw()                         // draw all points to standard draw 
+//  +  public Iterable<Point2D> range(RectHV rect)             // all points that are inside the rectangle (or on the boundary) 
+//  +  public           Point2D nearest(Point2D p)             // a nearest neighbor in the set to point p; null if the set is empty 
 
 //    public static void main(String[] args)                  // unit testing of the methods (optional) 
 // }
@@ -37,20 +37,29 @@ public class PointSET {
     }
 
     public void insert(Point2D p) {
+        if (p == null)
+            throw new IllegalArgumentException();
         this.points.add(p);
+    }
+
+    public boolean contains(Point2D p) {
+        if (p == null)
+            throw new IllegalArgumentException();
+        return this.points.contains(p);
+        
     }
 
     public void draw() {
         Point2D minPoint = this.points.min();
         Point2D maxPoint = this.points.max();
-        //StdDraw.setXscale(minPoint.x(), maxPoint.x());
-        //StdDraw.setYscale(minPoint.y(), maxPoint.y());
         for (Point2D p : this.points) {
             p.draw();
         }
     }
 
     public Point2D nearest(Point2D p) {
+        if (p == null)
+            throw new IllegalArgumentException();
         Point2D neighbor = null;
         double minDist = Double.POSITIVE_INFINITY;
         for (Point2D q : this.points) {
@@ -61,6 +70,8 @@ public class PointSET {
     }
 
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null)
+            throw new IllegalArgumentException();
         ArrayList<Point2D> a = new ArrayList<Point2D>();
         for (Point2D q : this.points) {
             if (rect.contains(q))
