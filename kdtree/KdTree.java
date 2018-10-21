@@ -87,7 +87,6 @@ public class KdTree {
         KdTreeNode curr = orig;
         KdTreeNode toAdd = new KdTreeNode(insertPt, currRect, currOrient);
         if (curr == null) {
-
             ++this.size;
             return toAdd;
         }
@@ -111,7 +110,9 @@ public class KdTree {
     }
 
     public void insert(Point2D p) {
-        this.root = insert(this.root, p, new RectHV(0, 0 , 1, 1), VERT);
+        if (p == null) throw new IllegalArgumentException();
+        if (!contains(p))
+            this.root = insert(this.root, p, new RectHV(0, 0 , 1, 1), VERT);
     }
 
     // Private preorder traversal helper function
@@ -129,10 +130,41 @@ public class KdTree {
     }
 
     public boolean contains(Point2D p) {
-        Point2D q = nearest(p);
-        return q.equals(p);
+        if (p == null) throw new IllegalArgumentException();
+        return contains(this.root, p);
     }
 
+    private boolean contains(KdTreeNode orig, Point2D p) {
+        //StdOut.println("    Call to contains(orig, p)");
+        //StdOut.println("    Point p: ");
+        //StdOut.printf("\t");
+        //StdOut.println(p);
+        boolean result = false;
+        KdTreeNode queryNode = new KdTreeNode(p, new RectHV(0,0,0,0), false);
+        if (orig == null) {
+            //StdOut.println("    orig == null, returning false");
+            return false;
+        } 
+        //StdOut.println("    orig.pt: ");
+        //StdOut.printf("\t");
+        //StdOut.println(orig.pt);
+        if (orig.pt.equals(p)) {
+            //StdOut.println("    Found our point, returning true");
+            return true;
+        } 
+        if (orig.left != null && orig.compareTo(queryNode) < 0) {
+            //StdOut.println("    Entering left subtree.");
+            result |= contains(orig.left, p);
+        } 
+        if (orig.right != null && orig.compareTo(queryNode) >= 0)  {
+            //StdOut.println("    Entering right subtree.");
+            result |= contains(orig.right, p);
+        }
+        //StdOut.println("    Returning result: ");
+        //StdOut.printf("\t");
+        //StdOut.println(result);
+        return result;
+    }
 
     public void draw() {
         for (KdTreeNode k : iter()) {
@@ -159,6 +191,7 @@ public class KdTree {
     }
 
     public Point2D nearest(Point2D p) {
+        if (p == null) throw new IllegalArgumentException();
         return nearest(this.root, p, null);
     }
 
@@ -181,6 +214,7 @@ public class KdTree {
 
 
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) throw new IllegalArgumentException();
         return range(root, rect, new ArrayList<Point2D>());
     }
 
@@ -197,14 +231,29 @@ public class KdTree {
 
     public static void main(String[] args) {
         KdTree tree  = new KdTree();
-        for (int i = 0; i < 20; i++) {
+        ArrayDeque<Point2D> ptArray = new ArrayDeque<Point2D>();
+        StdOut.println("Adding random points.");
+        StdOut.println("---");
+        for (int i = 0; i < 500; i++) {
             double rand1 = StdRandom.uniform();
             double rand2 = StdRandom.uniform();
             Point2D p = new Point2D(rand1, rand2);
             StdOut.println(p);
+            ptArray.add(p);
             tree.insert(p);
         }
-
+        StdOut.println("---");
+        StdOut.println("Checking contains() -- all calls should return true");
+        StdOut.println("---");
+        for (Point2D r : ptArray) {
+            StdOut.println("###");
+            StdOut.println(r);
+            StdOut.println("tree.contains(r)?");
+            StdOut.println(tree.contains(r));
+            StdOut.println("###");
+        }
+        StdOut.println("End contains() test.");
+        StdOut.println("---");
         tree.draw();
         double rand1 = StdRandom.uniform();
         double rand2 = StdRandom.uniform();

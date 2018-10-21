@@ -23,7 +23,7 @@ import java.util.ArrayList;
 // }
 
 public class PointSET {
-    SET<Point2D> points;
+    private SET<Point2D> points;
     public PointSET() {
         this.points = new SET<Point2D>();
     }
@@ -50,8 +50,6 @@ public class PointSET {
     }
 
     public void draw() {
-        Point2D minPoint = this.points.min();
-        Point2D maxPoint = this.points.max();
         for (Point2D p : this.points) {
             p.draw();
         }
@@ -63,8 +61,10 @@ public class PointSET {
         Point2D neighbor = null;
         double minDist = Double.POSITIVE_INFINITY;
         for (Point2D q : this.points) {
-            if (p.distanceTo(q) < minDist)
+            if (p.distanceTo(q) < minDist) { 
                 neighbor = q;
+                minDist = p.distanceTo(q);
+            }
         }
         return neighbor;
     }
@@ -81,32 +81,32 @@ public class PointSET {
     }
 
     public static void main(String[] args) {
-        PointSET set = new PointSET();
-        double scale = 200;
-        for (int i = 0; i < 100; i++) {
-            double rand1 = scale*StdRandom.uniform();
-            double rand2 = scale*StdRandom.uniform();
-            Point2D p = new Point2D(rand1, rand2);
-            //StdOut.println(p);
-            set.insert(p);
-        }
-        StdDraw.setPenRadius(0.01);
-        StdDraw.setXscale(0, scale);
-        StdDraw.setYscale(0, scale);
-        set.draw();
-        double rand1 = scale*StdRandom.uniform();
-        double rand2 = scale*StdRandom.uniform();
-        Point2D m = new Point2D(rand1, rand2);
-        Point2D n = set.nearest(m);
-        RectHV r = new RectHV(20, 20, 100, 100);
-        r.draw();
-        Iterable<Point2D> it = set.range(r);
-        int count = 0;
-        for (Point2D q : it) {
-            StdOut.println(count);
-            StdOut.println(q);
-            count++;
-        }
+        // PointSET set = new PointSET();
+        // double scale = 200;
+        // for (int i = 0; i < 100; i++) {
+        //     double rand1 = scale*StdRandom.uniform();
+        //     double rand2 = scale*StdRandom.uniform();
+        //     Point2D p = new Point2D(rand1, rand2);
+        //     //StdOut.println(p);
+        //     set.insert(p);
+        // }
+        // StdDraw.setPenRadius(0.01);
+        // StdDraw.setXscale(0, scale);
+        // StdDraw.setYscale(0, scale);
+        // set.draw();
+        // double rand1 = scale*StdRandom.uniform();
+        // double rand2 = scale*StdRandom.uniform();
+        // Point2D m = new Point2D(rand1, rand2);
+        // Point2D n = set.nearest(m);
+        // RectHV r = new RectHV(20, 20, 100, 100);
+        // r.draw();
+        // Iterable<Point2D> it = set.range(r);
+        // int count = 0;
+        // for (Point2D q : it) {
+        //     StdOut.println(count);
+        //     StdOut.println(q);
+        //     count++;
+        // }
         //StdOut.println("--------------");
         //StdOut.println(m);
         //StdOut.println(n);
