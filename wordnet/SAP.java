@@ -4,8 +4,8 @@ import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 import java.util.Map;
 import java.util.AbstractMap;
@@ -39,13 +39,16 @@ public class SAP {
     private Map<Integer, Integer> ancestorMap;
     
     private class AncestorPair implements Comparable<AncestorPair> {
-        Map.Entry<Integer, Integer> pair;   
+        Map.Entry<Integer, Integer> pair;
+
         public AncestorPair(int ancestor, int dist) {
             this.pair = new AbstractMap.SimpleImmutableEntry<>(ancestor, dist);
         }
+
         public int compareTo(AncestorPair y) {
             return this.pair.getValue() - y.pair.getValue();
         }
+
         public int getDist() { return this.pair.getValue(); }
         public int getKey() { return this.pair.getKey(); }
     }
@@ -58,28 +61,24 @@ public class SAP {
 
     public int length(int v, int w) {
         int key = v + this.size*w;
-        if (this.ancestorMap.containsKey(key))
-            return this.ancestorMap.get(key)/this.size;
-        else
+        if (!this.ancestorMap.containsKey(key))
             ancestorHelper(v, w);
         return this.ancestorMap.get(key)/this.size;
     }
 
     public int ancestor(int v, int w) {
         int key = v + this.size*w;
-        if (this.ancestorMap.containsKey(key))
-            return this.ancestorMap.get(key)%this.size;
-        else
+        if (!this.ancestorMap.containsKey(key))
             ancestorHelper(v, w);
         return this.ancestorMap.get(key)%this.size;
     }
 
-    private void ancestorHelper(int v, int w) {
+    private AncestorPair ancestorHelper(int v, int w) {
         BreadthFirstDirectedPaths bfsV = new BreadthFirstDirectedPaths(this.graph, v);
         BreadthFirstDirectedPaths bfsW = new BreadthFirstDirectedPaths(this.graph, w);
         ArrayList<AncestorPair> pairs = new ArrayList<AncestorPair>();
 
-        StdOut.println(this.size);
+        // StdOut.println(this.size);
         for (int i = 0; i < this.size; i++) {
             if (bfsV.hasPathTo(i))
                 if (bfsW.hasPathTo(i)) {
@@ -94,15 +93,31 @@ public class SAP {
         int key = v + this.graph.V()*w;
         int val = shortest.getKey() + this.graph.V()*shortest.getDist();
         ancestorMap.put(key, val);
-
+        return shortest;
     }
 
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        return 0;
+        ArrayList<AncestorPair> pairs = new ArrayList<AncestorPair>();
+
+        for (Integer iv : v)
+            for (Integer iw : w) {
+                pairs.add(ancestorHelper(iv, iw));
+            }
+        Collections.sort(pairs);
+
+        return pairs.get(0).getDist();
     }
 
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-        return 0;
+        ArrayList<AncestorPair> pairs = new ArrayList<AncestorPair>();
+
+        for (Integer iv : v)
+            for (Integer iw : w) {
+                pairs.add(ancestorHelper(iv, iw));
+            }
+        Collections.sort(pairs);
+
+        return pairs.get(0).getKey();
     }
 
     public static void main(String[] args) {

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 /* 
 public class WordNet {
 
@@ -34,12 +35,12 @@ public class WordNet {
 public class WordNet {
 
    private Digraph hypernymGraph;
-   private Map<String, Integer> nounMap;
+   private Map<String, ArrayList<Integer>> nounMap;
    private SAP wordNetSAP;
    private ArrayList<String> synsetList;
 
    public WordNet(String synsets, String hypernyms) {
-      this.nounMap = new HashMap<String, Integer>();
+      this.nounMap = new HashMap<String, ArrayList<Integer>>();
 
       In synsetFile = new In(synsets);
       In hypernymFile = new In(hypernyms);
@@ -59,7 +60,9 @@ public class WordNet {
          String[] nouns = tokens[1].split(" ");
          this.synsetList.add(tokens[1]);
          for (String noun : nouns) {
-            nounMap.put(noun, Integer.parseInt(tokens[0]));
+            if (nounMap.get(noun) == null)
+                nounMap.put(noun, new ArrayList<Integer>());
+            nounMap.get(noun).add(Integer.parseInt(tokens[0]));
          }
          currentLine = synsetFile.readLine();
       }
@@ -96,15 +99,15 @@ public class WordNet {
    }
 
    public int distance(String nounA, String nounB) {
-      int keyA = nounMap.get(nounA);
-      int keyB = nounMap.get(nounB);
-      return this.wordNetSAP.length(keyA, keyB);
+      ArrayList<Integer> keyListA = nounMap.get(nounA);
+      ArrayList<Integer> keyListB = nounMap.get(nounB);
+      return this.wordNetSAP.length(keyListA, keyListB);
    }
 
    public String sap(String nounA, String nounB) {
-      int keyA = nounMap.get(nounA);
-      int keyB = nounMap.get(nounB);
-      int keySAP =  this.wordNetSAP.ancestor(keyA, keyB);
+      ArrayList<Integer> keyListA = nounMap.get(nounA);
+      ArrayList<Integer> keyListB = nounMap.get(nounB);
+      int keySAP =  this.wordNetSAP.ancestor(keyListA, keyListB);
       String nounSAP = this.synsetList.get(keySAP);
       return nounSAP;
    }
